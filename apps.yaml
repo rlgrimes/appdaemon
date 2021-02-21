@@ -1,0 +1,18 @@
+---
+hello_world:
+  module: hello
+  class: HelloWorld
+
+front_door_lock_notification:
+  module: lock_notification
+  class: LockNotifications
+  lock: lock.front_door
+  lockname: "frontdoor"
+  lock_name: "Front Door"
+  alexas:
+    - media_player.kitchen_echo_show
+    - media_player.downstairs_ecobee
+    - media_player.master_bath_alexa
+    - media_player.office
+  log: lock_notification_log
+  debug: true
