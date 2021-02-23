@@ -39,56 +39,61 @@ class LockNotifications(hass.Hass):
 				self.call_service("alarm_control_panel/alarm_disarm", entity_id = 'alarm_control_panel.home_alarm')
 				if self.get_state("group.family") == "home": 
 					self.log("Somebody is home and the door unlocked so this is ok") 
-					message = ("The %s lock was just unlocked by %s." , entity_name, user_string)
-					speak_message = ("Welcome Home %s.", user_string)
-					self.run_in(self.audio_notification, 1, speak_message = speak_message)
-					self.notify(message, title="{} Lock" .format(entity))
+					message = f"The {entity_name} lock was just unlocked by {user_string}."
+					speak_message = f"Welcome Home {user_string}."
+					self.run_in(self.announce_state, 1, speak_message = speak_message)
+					self.notify(message, title = f"{entity} Lock", name=globals.notify)
 
 					# This is the notification that I would like to use in the future
 					# self.notify(message, title="{} Lock" .format(entity), name = globals.notify)
 				else: 
 					self.log("The lock was just unlocked by %s", user_string) 
-					message = ("The %s lock was just unlocked by %s with nobody home, are they allowed to do this?", user_string) 
-					speak_message = ("Welcome Home %s.", user_string) 
-					self.run_in(self.audio_notification, 1, speak_message = speak_message)
-					self.notify(message, title="{} Lock" .format(entity))
+					message = f"The {entity_name} lock was just unlocked by {user_string} with nobody home, are they allowed to do this?" 
+					speak_message = f"Welcome Home {user_string}."
+					self.run_in(self.announce_state, 1, speak_message = speak_message)
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify )
 								
 			elif action_type == "Keypad lock operation":
 				self.log("The %s lock was just locked by keypad.", entity_name) 
-				message = ("The %s was just locked by the keypad", entity_name)
-				self.notify(message, title="{} Lock" .format(entity), name=globals.notify)
+				message = f"The {entity_name} was just locked by the keypad"
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 				self.call_service("alarm_control_panel/alarm_arm_home", entity_id = 'alarm_control_panel.home_alarm')
 
 			elif action_type == "Manual unlock operation":
 				self.log("The %s lock was just unlocked by someone", entity_name) 
 				if self.get_state("group.family") == "home": 
 					self.log("Somebody is home and the door manually unlocked so this is ok") 
-					message = ("The %s was just manually unlocked with someone home.", entity_name) 
-					self.notify(message, title="{} Lock" .format(entity))
+					message = f"The {entity_name} was just manually unlocked."
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 				else: 
 					self.log("The %s lock was just manually unlocked.", entity_name) 
-					message = ("The %s lock was just unlocked with nobody home!", entity_name) 
-					speak_message = ("Hello there, be advised that I have notified the home owners that you have unlocked the %s",entity_name) 
-					self.run_in(self.audio_notification, 1, speak_message = speak_message)
-					self.notify(message, title="{} Lock" .format(entity))
+					message = f"The {entity_name} lock was just unlocked with nobody home!"
+					speak_message = f"Hello there, be advised that I have notified the home owners that you have unlocked the {entity_name}" 
+					self.run_in(self.announce_state, 1, speak_message = speak_message)
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
 			elif action_type == "Manual lock operation":
 				self.log("The %s lock was just manually locked.", entity_name)
-				message = ("The %s was manually locked.", entity_name) 
-				self.notify(message, title="{} Lock" .format(entity))
+				message = f"The {entity_name} was manually locked."
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
 			else:
 				self.log("The %s lock was just operated??" % entity_name) 
-				message = ("The %s was just operated with no information?" % entity_name)   
-				self.notify(message, title="{} Lock" .format(entity))
+				message = f"The {entity_name} was just operated with no information?"  
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
-	def audio_notification(self, kwargs): 
-		speak_message = kwargs["speak_message"] 
+	def announce_state(self, kwargs):
+		speak_message = kwargs["speak_message"]
+		for alexa in self.args["alexas"]:
+			self.run_in(self.announce_state_alexa, 1, speak_message = speak_message, alexa = alexa)
 
-		self.call_service( 
+	def announce_state_alexa(self,kwargs):
+		alexa = kwargs["alexa"]
+		speak_message = kwargs["speak_message"]
+
+		self.call_service(
 			"notify/alexa_media", 
-			data = {"type": "tts"},
-			target = self.args("alexas"),
-			volume_level = 0.65, 
-			message = speak_message,  
-		)
+			data = {"type":"tts", "method":"all"}, 
+			target = alexa, title = "Door Announcement", 
+			message = speak_message
+			)
