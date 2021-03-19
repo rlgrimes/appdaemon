@@ -1,6 +1,6 @@
 import hassapi as hass
 from datetime import datetime, time
-#import globals
+import globals
 
 
 #notify group notify.ios_family - where I eventually want the notification to be sent.
@@ -42,8 +42,7 @@ class LockNotifications(hass.Hass):
 					message = f"The {entity_name} lock was just unlocked by {user_string}."
 					speak_message = f"Welcome Home {user_string}."
 					self.run_in(self.announce_state, 1, speak_message = speak_message)
-					self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-                    #self.notify(message, title = f"{entity} Lock", name=globals.notify)
+					self.notify(message, title = f"{entity} Lock", name=globals.notify)
 
 					# This is the notification that I would like to use in the future
 					# self.notify(message, title="{} Lock" .format(entity), name = globals.notify)
@@ -52,14 +51,12 @@ class LockNotifications(hass.Hass):
 					message = f"The {entity_name} lock was just unlocked by {user_string} with nobody home, are they allowed to do this?" 
 					speak_message = f"Welcome Home {user_string}."
 					self.run_in(self.announce_state, 1, speak_message = speak_message)
-                    self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-					#self.notify(message, title = f"{entity_name} Lock", name=globals.notify )
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify )
 								
 			elif action_type == "Keypad lock operation":
 				self.log("The %s lock was just locked by keypad.", entity_name) 
 				message = f"The {entity_name} was just locked by the keypad"
-                self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-				#self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 				self.call_service("alarm_control_panel/alarm_arm_home", entity_id = 'alarm_control_panel.home_alarm')
 
 			elif action_type == "Manual unlock operation":
@@ -67,27 +64,23 @@ class LockNotifications(hass.Hass):
 				if self.get_state("group.family") == "home": 
 					self.log("Somebody is home and the door manually unlocked so this is ok") 
 					message = f"The {entity_name} was just manually unlocked."
-                    self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-					#self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 				else: 
 					self.log("The %s lock was just manually unlocked.", entity_name) 
 					message = f"The {entity_name} lock was just unlocked with nobody home!"
 					speak_message = f"Hello there, be advised that I have notified the home owners that you have unlocked the {entity_name}" 
 					self.run_in(self.announce_state, 1, speak_message = speak_message)
-                    self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-					#self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
+					self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
 			elif action_type == "Manual lock operation":
 				self.log("The %s lock was just manually locked.", entity_name)
 				message = f"The {entity_name} was manually locked."
-                self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message)
-				#self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
 			else:
 				self.log("The %s lock was just operated??" % entity_name) 
-				message = f"The {entity_name} was just operated with no information?" 
-                self.call_service("notify/pushover", title = f"{entity_name} Lock", message = message) 
-				#self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
+				message = f"The {entity_name} was just operated with no information?"  
+				self.notify(message, title = f"{entity_name} Lock", name=globals.notify)
 
 	def announce_state(self, kwargs):
 		speak_message = kwargs["speak_message"]
